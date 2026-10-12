@@ -3,6 +3,8 @@ on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +18,16 @@ jobs:
         with:
           gradle-version: '8.9'
       - run: gradle assembleDebug --no-daemon
+      - run: cp app/build/outputs/apk/debug/app-debug.apk childguard.apk
       - uses: actions/upload-artifact@v4
         with:
           name: childguard-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: childguard.apk
+      # 폰에서 바로 받을 수 있도록 항상 같은 'latest' 릴리스에 덮어쓴다
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: 최신 APK
+          body: 폰에서 childguard.apk를 눌러 받은 뒤 설치하세요.
+          files: childguard.apk
+          make_latest: true
